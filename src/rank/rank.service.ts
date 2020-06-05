@@ -51,7 +51,6 @@ export class RankService {
             const rank = this.getRank(singleLeg, direct.length);
             if (rank && !(existingRankNames.includes(rank.type))) {
                 const newRank = this.rankRepo.create({
-                    id: generateId(),
                     rank: rank.type,
                     owner: user, direct
                 });
