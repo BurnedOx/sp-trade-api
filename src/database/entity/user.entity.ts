@@ -1,10 +1,12 @@
 import { Base } from "./base.entity";
 import { Column, Entity, OneToMany, JoinColumn, ManyToOne, BeforeInsert, OneToOne } from "typeorm";
-import { BankDetails, UserRO, MemberRO } from "interfaces";
+import { BankDetails, UserRO, MemberRO, SingleLegMemberRO } from "src/interfaces";
 import * as bcrypct from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { EPin } from "./epin.entity";
 import { Income } from "./income.entity";
+import { ROI } from "./roi.entity";
+import { Rank } from "./rank.entity";
 
 @Entity()
 export class User extends Base {
@@ -22,6 +24,9 @@ export class User extends Base {
 
     @Column({ default: 'inactive' })
     status: 'active' | 'inactive';
+
+    @Column({ nullable: true, default: null })
+    activatedAt: Date | null;
 
     @Column({ type: 'jsonb', nullable: true, default: null })
     bankDetails: BankDetails | null;
@@ -49,18 +54,29 @@ export class User extends Base {
     @OneToMany(() => Income, income => income.from)
     generatedIncomes: Income[];
 
+    @OneToMany(() => ROI, roi => roi.owner)
+    singleLegIncomes: ROI[];
+
+    @OneToMany(() => Rank, rank => rank.owner)
+    @JoinColumn()
+    ranks: Rank[];
+
+    @ManyToOne(() => Rank, rank => rank.direct, { nullable: true })
+    @JoinColumn()
+    generatedRank: Rank | null;
+
     @BeforeInsert()
     async hashPassword() {
         this.password = await bcrypct.hash(this.password, 10);
     }
 
     toResponseObject(getToken: boolean = false): UserRO {
-        const { id, name, mobile, bankDetails, panNumber, roll, status, sponsoredBy, balance, updatedAt, createdAt } = this;
+        const { id, name, mobile, bankDetails, panNumber, roll, status, sponsoredBy, balance, ranks, activatedAt, updatedAt, createdAt } = this;
         const data: UserRO = {
-            id, name, mobile, bankDetails, panNumber, roll, status, balance, updatedAt, createdAt,
+            id, name, mobile, bankDetails, panNumber, roll, status, balance, activatedAt, updatedAt, createdAt,
             sponsoredBy: sponsoredBy ? { id: sponsoredBy.id, name: sponsoredBy.name } : null,
             epinId: this.epin?.id ?? null,
-            activatedAt: this.epin?.updatedAt ?? null
+            rank: ranks ? (ranks[ranks.length - 1]?.rank ?? null) : null
         };
         if (getToken) {
             data.token = this.token;
@@ -69,12 +85,13 @@ export class User extends Base {
     }
 
     toMemberObject(level: number): MemberRO {
-        const { id, name, status, epin, createdAt } = this;
-        const data: MemberRO = {
-            id, name, level, status, createdAt,
-            activatedAt: epin?.updatedAt ?? null
-        };
-        return data;
+        const { id, name, status, activatedAt, createdAt } = this;
+        return { id, name, level, status, createdAt, activatedAt };
+    }
+
+    toSingleLegMemberObject(): SingleLegMemberRO {
+        const { id, name, activatedAt } = this;
+        return { id, name, activatedAt };
     }
 
     async comparePassword(attempt: string) {

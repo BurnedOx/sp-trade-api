@@ -1,4 +1,5 @@
-import { CreateDateColumn, UpdateDateColumn, BaseEntity, PrimaryColumn } from "typeorm";
+import { CreateDateColumn, UpdateDateColumn, BaseEntity, PrimaryColumn, BeforeInsert } from "typeorm";
+import { generateId } from "src/common/utils/generateId";
 
 export class Base extends BaseEntity {
     @PrimaryColumn()
@@ -9,4 +10,9 @@ export class Base extends BaseEntity {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @BeforeInsert()
+    createId() {
+        this.id = generateId();
+    }
 }

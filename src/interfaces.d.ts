@@ -17,6 +17,7 @@ export interface UserRO {
     roll: 'user' | 'admin';
     status: 'active' | 'inactive';
     activatedAt: Date | null;
+    rank: RankName | null;
     balance: number;
     updatedAt: Date;
     createdAt: Date;
@@ -30,6 +31,12 @@ export interface MemberRO {
     status: 'active' | 'inactive';
     activatedAt: Date | null;
     createdAt: Date;
+}
+
+export interface SingleLegMemberRO {
+    id: string;
+    name: string;
+    activatedAt: Date | null;
 }
 
 export interface EpinRO {
@@ -46,4 +53,23 @@ export interface IncomeRO {
     level: number,
     amount: number,
     createdAt: Date
+}
+
+export interface RoiRO {
+    id: string;
+    credit: number;
+    currentBalance: number;
+    rank: RankName;
+    updatedAt: Date;
+    createdAt: Date;
+}
+
+export type RankName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'EMERALD' | 'RUBY' | 'PEARL' | 'DIAMOND' | 'WHITE DIAMOND' | 'BLACK DIAMOND' | 'BLUE DIAMOND' | 'CORPORATE' | 'AMBASSADOR' | 'EMPOWER' | 'CROWN';
+
+export interface RankData {
+    type: RankName;
+    direct: number;
+    company: number;
+    income: number;
+    validity: number;
 }
