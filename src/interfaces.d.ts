@@ -75,7 +75,7 @@ export interface WithdrawalRO extends BankDetails {
     updatedAt: Date;
 }
 
-export type RankName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'EMERALD' | 'RUBY' | 'PEARL' | 'DIAMOND' | 'WHITE DIAMOND' | 'BLACK DIAMOND' | 'BLUE DIAMOND' | 'AMBASSADOR';
+export type RankName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'EMERALD' | 'RUBY' | 'PEARL' | 'DIAMOND' | 'WHITE DIAMOND' | 'BLACK DIAMOND' | 'BLUE DIAMOND' | 'CORPORATE' | 'AMBASSADOR' | 'EMPOWER' | 'CROWN';
 
 export interface RankData {
     type: RankName;
