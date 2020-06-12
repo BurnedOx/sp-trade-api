@@ -2,7 +2,7 @@ export interface BankDetails {
     accountName: string;
     bankName: string;
     accountNumber: number;
-    isfc: number;
+    isfc: string;
     accountType: string;
 }
 
@@ -13,7 +13,7 @@ export interface UserRO {
     sponsoredBy: Pick<UserRO, 'id' | 'name'> | null;
     epinId: string | null;
     bankDetails: BankDetails | null;
-    panNumber: number | null;
+    panNumber: string | null;
     roll: 'user' | 'admin';
     status: 'active' | 'inactive';
     activatedAt: Date | null;
@@ -64,7 +64,18 @@ export interface RoiRO {
     createdAt: Date;
 }
 
-export type RankName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'EMERALD' | 'RUBY' | 'PEARL' | 'DIAMOND' | 'WHITE DIAMOND' | 'BLACK DIAMOND' | 'BLUE DIAMOND' | 'CORPORATE' | 'AMBASSADOR' | 'EMPOWER' | 'CROWN';
+export interface WithdrawalRO extends BankDetails {
+    id: string;
+    withdrawAmount: number;
+    netAmount: number;
+    processedAt: Date | null;
+    paymentType: string;
+    status: 'paid' | 'unpaid' | 'cancelled';
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export type RankName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'EMERALD' | 'RUBY' | 'PEARL' | 'DIAMOND' | 'WHITE DIAMOND' | 'BLACK DIAMOND' | 'BLUE DIAMOND' | 'AMBASSADOR';
 
 export interface RankData {
     type: RankName;

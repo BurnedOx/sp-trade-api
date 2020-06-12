@@ -1,7 +1,9 @@
 import { CreateDateColumn, UpdateDateColumn, BaseEntity, PrimaryColumn, BeforeInsert } from "typeorm";
-import { generateId } from "src/common/utils/generateId";
+import { customAlphabet } from "nanoid";
 
 export class Base extends BaseEntity {
+    private generateId = customAlphabet('1234567890', 8)
+
     @PrimaryColumn()
     id: string;
 
@@ -13,6 +15,6 @@ export class Base extends BaseEntity {
 
     @BeforeInsert()
     createId() {
-        this.id = generateId();
+        this.id = this.generateId();
     }
 }

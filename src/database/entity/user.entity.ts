@@ -1,5 +1,5 @@
 import { Base } from "./base.entity";
-import { Column, Entity, OneToMany, JoinColumn, ManyToOne, BeforeInsert, OneToOne } from "typeorm";
+import { Column, Entity, OneToMany, JoinColumn, ManyToOne, BeforeInsert, OneToOne, ManyToMany, JoinTable } from "typeorm";
 import { BankDetails, UserRO, MemberRO, SingleLegMemberRO } from "src/interfaces";
 import * as bcrypct from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
@@ -7,6 +7,8 @@ import { EPin } from "./epin.entity";
 import { Income } from "./income.entity";
 import { ROI } from "./roi.entity";
 import { Rank } from "./rank.entity";
+import { Ranks } from "src/common/costraints";
+import { Withdrawal } from "./withdrawal.entity";
 
 @Entity()
 export class User extends Base {
@@ -28,11 +30,14 @@ export class User extends Base {
     @Column({ nullable: true, default: null })
     activatedAt: Date | null;
 
+    @Column({ default: 0 })
+    totalSingleLeg: number;
+
     @Column({ type: 'jsonb', nullable: true, default: null })
     bankDetails: BankDetails | null;
 
     @Column({ nullable: true, default: null })
-    panNumber: number | null;
+    panNumber: string | null;
 
     @Column({ default: 0 })
     balance: number;
@@ -65,18 +70,26 @@ export class User extends Base {
     @JoinColumn()
     generatedRank: Rank | null;
 
+    @OneToMany(() => Withdrawal, withdrawal => withdrawal.owner)
+    withdrawals: Withdrawal[];
+
     @BeforeInsert()
     async hashPassword() {
         this.password = await bcrypct.hash(this.password, 10);
     }
 
     toResponseObject(getToken: boolean = false): UserRO {
-        const { id, name, mobile, bankDetails, panNumber, roll, status, sponsoredBy, balance, ranks, activatedAt, updatedAt, createdAt } = this;
+        const { id, name, mobile, panNumber, bankDetails, roll, status, sponsoredBy, balance, ranks, activatedAt, updatedAt, createdAt } = this;
+        ranks?.sort((a, b) => {
+            const aRank = Ranks.find(r => r.type === a.rank);
+            const bRank = Ranks.find(r => r.type === b.rank);
+            return (bRank.company - aRank.company);
+        });
         const data: UserRO = {
-            id, name, mobile, bankDetails, panNumber, roll, status, balance, activatedAt, updatedAt, createdAt,
+            id, name, mobile, panNumber, roll, status, balance, bankDetails, activatedAt, updatedAt, createdAt,
             sponsoredBy: sponsoredBy ? { id: sponsoredBy.id, name: sponsoredBy.name } : null,
             epinId: this.epin?.id ?? null,
-            rank: ranks ? (ranks[ranks.length - 1]?.rank ?? null) : null
+            rank: ranks ? (ranks[0]?.rank ?? null) : null
         };
         if (getToken) {
             data.token = this.token;

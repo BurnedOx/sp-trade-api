@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { BankDetails } from 'src/interfaces';
 
 export class RegistrationDTO {
     @IsString()
@@ -42,10 +43,49 @@ export class LoginDTO {
     password: string;
 }
 
+export class UpdatePasswordDTO {
+    @IsString()
+    oldPassword: string;
+
+    @IsString()
+    newPassword: string;
+}
+
 export class SponsorUpdateDTO {
     @IsString()
     userId: string;
 
     @IsString()
     sponsorId: string;
+}
+
+export class ProfileDTO {
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @IsNumber()
+    @IsOptional()
+    mobile?: number;
+
+    @IsString()
+    @IsOptional()
+    panNumber?: string;
+}
+
+export class BankDTO implements BankDetails {
+    @IsString()
+    accountName: string;
+
+    @IsString()
+    bankName: string;
+
+    @IsNumber()
+    accountNumber: number;
+
+    @IsString()
+    isfc: string;
+
+    @IsString()
+    accountType: string;
 }

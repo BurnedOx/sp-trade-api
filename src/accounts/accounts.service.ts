@@ -2,17 +2,18 @@ import { Injectable, HttpException, HttpStatus, Logger, Inject } from '@nestjs/c
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/database/entity/user.entity';
 import { Repository, getManager } from 'typeorm';
-import { RegistrationDTO, LoginDTO, AdminRegistrationDTO, SponsorUpdateDTO } from './accounts.dto';
+import { RegistrationDTO, LoginDTO, AdminRegistrationDTO, SponsorUpdateDTO, UpdatePasswordDTO, ProfileDTO, BankDTO } from './accounts.dto';
 import { EPin } from 'src/database/entity/epin.entity';
 import { RankService } from 'src/rank/rank.service';
 import { IncomeService } from 'src/income/income.service';
+import * as bcrypct from 'bcryptjs';
 
 @Injectable()
 export class AccountsService {
     constructor(
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
- 
+
         @InjectRepository(EPin)
         private readonly epinRepo: Repository<EPin>,
 
@@ -91,10 +92,43 @@ export class AccountsService {
             user.activatedAt = new Date();
             await trx.save(user);
             await this.incomeService.generateIncomes(user, trx);
-            await this.rankService.generateRanks(trx);
         });
 
+        this.rankService.generateRanks(user.id);
+
         return user.toResponseObject();
+    }
+
+    async updateProfile(data: ProfileDTO, userId: string) {
+        const user = await this.userRepo.update(userId, data);
+        if (user.affected > 0) {
+            return 'ok';
+        } else {
+            throw new HttpException('Update Failed', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updatePassword(data: UpdatePasswordDTO, userId: string) {
+        const { oldPassword, newPassword } = data;
+        const user = await this.userRepo.findOne(userId);
+
+        if (!user || !(await user.comparePassword(oldPassword))) {
+            throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
+        }
+
+        user.password = await bcrypct.hash(newPassword, 10);
+        await this.userRepo.save(user);
+
+        return 'ok';
+    }
+
+    async updateBankDetails(data: BankDTO, userId: string) {
+        const user = await this.userRepo.update(userId, { bankDetails: data });
+        if (user.affected > 0) {
+            return 'ok';
+        } else {
+            throw new HttpException('Update Failed', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     async updateSponsor(data: SponsorUpdateDTO) {
@@ -116,5 +150,16 @@ export class AccountsService {
         });
 
         return user.toResponseObject();
+    }
+
+    async resetBalance() {
+        const users = await this.userRepo.find();
+        await getManager().transaction(async trx => {
+            for (let user of users) {
+                user.balance = 0;
+                await trx.save(user);
+            }
+        });
+        return 'ok';
     }
 }
