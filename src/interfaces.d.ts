@@ -17,11 +17,21 @@ export interface UserRO {
     roll: 'user' | 'admin';
     status: 'active' | 'inactive';
     activatedAt: Date | null;
-    rank: RankName | null;
-    balance: number;
     updatedAt: Date;
     createdAt: Date;
     token?: string;
+}
+
+export interface UserDetailsRO {
+    wallet: number;
+    rank: RankName | null;
+    direct: number;
+    downline: number;
+    singleLeg: number;
+    levelIncome: number;
+    ROI: number;
+    totalWithdrawal: number;
+    totalIncome: number;
 }
 
 export interface MemberRO {
@@ -47,12 +57,13 @@ export interface EpinRO {
 }
 
 export interface IncomeRO {
-    id: string,
-    ownerId: string,
-    from: Pick<UserRO, 'id' | 'name'>,
-    level: number,
-    amount: number,
-    createdAt: Date
+    id: string;
+    ownerId: string;
+    from: Pick<UserRO, 'id' | 'name'>;
+    level: number;
+    amount: number;
+    currentBalance: number;
+    createdAt: Date;
 }
 
 export interface RoiRO {
@@ -83,4 +94,12 @@ export interface RankData {
     company: number;
     income: number;
     validity: number;
+}
+
+export interface TransactionRO {
+    credit?: number;
+    debit?: number;
+    currentBalance: number;
+    remarks: string;
+    createdAt: Date;
 }

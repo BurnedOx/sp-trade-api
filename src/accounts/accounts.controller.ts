@@ -1,4 +1,4 @@
-import { Controller, Post, UsePipes, Get, Body, UseGuards, Put, Delete } from '@nestjs/common';
+import { Controller, Post, UsePipes, Get, Body, UseGuards, Put, Delete, Param } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { ValidationPipe } from '../common/validation.pipe';
 import { RegistrationDTO, LoginDTO, AdminRegistrationDTO, SponsorUpdateDTO, UpdatePasswordDTO, ProfileDTO, BankDTO } from './accounts.dto';
@@ -34,6 +34,12 @@ export class AccountsController {
     @UsePipes(new ValidationPipe())
     login(@Body() data: LoginDTO) {
         return this.accountsService.login(data);
+    }
+
+    @Get('details')
+    @UseGuards(new AuthGuard())
+    getDetails(@CustomHeader() headers: HeaderDTO) {
+        return this.accountsService.getDetails(headers.userId);
     }
 
     @Put('activate')
@@ -75,5 +81,12 @@ export class AccountsController {
     @UseGuards(new AuthGuard())
     resetWallets() {
         return this.accountsService.resetBalance();
+    }
+
+    @Delete(':id')
+    @UseGuards(new AuthGuard())
+    @UsePipes(new ValidationPipe())
+    deleteUser(@Param('id') id: string) {
+        return this.accountsService.deleteUser(id);
     }
 }
